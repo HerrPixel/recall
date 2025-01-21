@@ -1,35 +1,30 @@
-use ratatui::{DefaultTerminal, Frame};
 use std::io;
 
-#[derive(Debug, Default)]
-struct AppConfig {
-    highlight_color: ratatui::style::Color,
-}
+mod app;
+mod config;
+mod ui;
 
-#[derive(Debug, Default)]
-struct App {
-    config: AppConfig,
-    exit: bool,
-}
+use ratatui::{
+    crossterm::terminal,
+    prelude::{Backend, CrosstermBackend},
+    Terminal,
+};
+use ui::ui;
 
-impl App {
-    pub fn run(&mut self, terminal: &mut DefaultTerminal) -> io::Result<()> {
-        while !self.exit {
-            terminal.draw(|frame| self.draw(frame))?;
-        }
-        Ok(())
-    }
-
-    fn draw(&self, frame: &mut Frame) {
-        todo!()
-    }
-}
+use crate::app::App;
 
 fn main() -> io::Result<()> {
     let mut terminal = ratatui::init();
+    let mut app = app::App::new();
 
-    let app_result = App::default().run(&mut terminal);
+    run(&mut terminal, &mut app)?;
     ratatui::restore();
 
-    app_result
+    Ok(())
+}
+
+fn run<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<()> {
+    loop {
+        terminal.draw(|f| ui(f, app))?;
+    }
 }
