@@ -1,5 +1,6 @@
 #[derive(Debug)]
 pub struct App {
+    pub has_config: bool,
     pub current_page: usize,
     pub pages: Vec<Page>,
     pub number_of_pages: usize,
@@ -15,6 +16,7 @@ pub struct Page {
 impl App {
     pub fn new() -> App {
         App {
+            has_config: false,
             current_page: 0,
             pages: Vec::new(),
             number_of_pages: 0,
