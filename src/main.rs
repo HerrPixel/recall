@@ -40,8 +40,15 @@ fn run<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<()> 
 
 fn handle_key_event(key: KeyEvent, app: &mut App) {
     if key.modifiers == KeyModifiers::CONTROL {
-        if key.code == KeyCode::Char('c') {
-            app.quit = true
+        match key.code {
+            KeyCode::Char('c') => app.quit = true,
+            _ => {}
+        }
+    } else {
+        match key.code {
+            KeyCode::Left => app.decrement_page(),
+            KeyCode::Right => app.increment_page(),
+            _ => {}
         }
     }
 }
