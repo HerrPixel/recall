@@ -33,7 +33,7 @@ pub fn render_no_config_hint(frame: &mut Frame) {
 
     let paragraph = Paragraph::new(vec![
         "It seems like there is no config loaded!".into(),
-        "To Load a config, use <insert> or <insert>".into(),
+        "To load a config, use <insert> or <insert>".into(),
     ])
     .centered()
     .block(block);
