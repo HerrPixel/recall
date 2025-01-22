@@ -5,6 +5,7 @@ pub struct App {
     pub current_page: usize,
     pub pages: Vec<Page>,
     pub number_of_pages: usize,
+    pub primary_color: ratatui::style::Color,
     pub highlight_color: ratatui::style::Color,
 }
 
@@ -22,7 +23,8 @@ impl App {
             current_page: 0,
             pages: Vec::new(),
             number_of_pages: 0,
-            highlight_color: ratatui::style::Color::Black,
+            primary_color: ratatui::style::Color::Black,
+            highlight_color: ratatui::style::Color::Blue,
         }
     }
 
