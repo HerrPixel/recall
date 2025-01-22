@@ -5,11 +5,8 @@ mod config;
 mod ui;
 
 use ratatui::{
-    crossterm::{
-        event::{self, Event, KeyCode, KeyEvent, KeyModifiers},
-        terminal,
-    },
-    prelude::{Backend, CrosstermBackend},
+    crossterm::event::{self, Event, KeyCode, KeyEvent, KeyModifiers},
+    prelude::Backend,
     Terminal,
 };
 use ui::ui;
