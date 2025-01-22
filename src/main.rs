@@ -5,7 +5,10 @@ mod config;
 mod ui;
 
 use ratatui::{
-    crossterm::terminal,
+    crossterm::{
+        event::{self, Event, KeyCode, KeyEvent, KeyModifiers},
+        terminal,
+    },
     prelude::{Backend, CrosstermBackend},
     Terminal,
 };
@@ -24,7 +27,21 @@ fn main() -> io::Result<()> {
 }
 
 fn run<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<()> {
-    loop {
+    while app.quit == false {
         terminal.draw(|f| ui(f, app))?;
+
+        if let Event::Key(key) = event::read()? {
+            handle_key_event(key, app)
+        }
+    }
+
+    Ok(())
+}
+
+fn handle_key_event(key: KeyEvent, app: &mut App) {
+    if key.modifiers == KeyModifiers::CONTROL {
+        if key.code == KeyCode::Char('c') {
+            app.quit = true
+        }
     }
 }
