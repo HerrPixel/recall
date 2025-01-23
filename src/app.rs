@@ -17,8 +17,8 @@ pub struct Section {
 
 #[derive(Debug)]
 pub struct Item {
-    keys: Vec<String>,
-    description: String,
+    pub keys: Vec<String>,
+    pub description: String,
 }
 
 impl App {
