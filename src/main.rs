@@ -16,6 +16,9 @@ fn main() -> io::Result<()> {
     let mut terminal = ratatui::init();
     let mut app = app::App::new();
 
+    app.add_test_section();
+    app.add_test_section();
+
     run(&mut terminal, &mut app)?;
     ratatui::restore();
 
