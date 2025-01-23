@@ -45,6 +45,7 @@ fn handle_key_event(key: KeyEvent, app: &mut App) {
         match key.code {
             KeyCode::Left => app.decrement_page(),
             KeyCode::Right => app.increment_page(),
+            KeyCode::Char('q') => app.quit = true,
             _ => {}
         }
     }
