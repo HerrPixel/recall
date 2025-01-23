@@ -1,15 +1,14 @@
-use std::io;
-
-mod app;
-mod config;
-mod ui;
-
 use ratatui::{
     crossterm::event::{self, Event, KeyCode, KeyEvent, KeyModifiers},
     prelude::Backend,
     Terminal,
 };
+use std::io;
 use ui::ui;
+
+mod app;
+mod config;
+mod ui;
 
 use crate::app::App;
 
