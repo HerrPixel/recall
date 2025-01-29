@@ -1,3 +1,4 @@
+use config::read_from_config;
 use ratatui::{
     crossterm::event::{self, Event, KeyCode, KeyEvent, KeyModifiers},
     prelude::Backend,
@@ -12,15 +13,18 @@ mod ui;
 
 use crate::app::App;
 
-fn main() -> io::Result<()> {
+fn main() -> Result<(), anyhow::Error> {
     let mut terminal = ratatui::init();
-    let mut app = app::App::new();
 
-    app.add_test_section();
-    app.add_test_section();
+    let config = read_from_config("./tests/config.toml".into())?;
+    let mut app = app::App::new(Some(config));
 
     run(&mut terminal, &mut app)?;
     ratatui::restore();
+
+    if let Err(e) = read_from_config("./tests/config.toml".into()) {
+        println!("{:#}", e);
+    };
 
     Ok(())
 }

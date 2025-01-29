@@ -1,89 +1,90 @@
 #[derive(Debug)]
 pub struct App {
     pub quit: bool,
-    pub has_config: bool,
-    pub current_section: usize,
-    pub sections: Vec<Section>,
-    pub number_of_sections: usize,
+    page_number: usize,
+    config: Option<Config>,
+}
+
+#[derive(Debug)]
+pub struct Config {
     pub primary_color: ratatui::style::Color,
     pub highlight_color: ratatui::style::Color,
+    pub tables: Vec<Table>,
 }
 
 #[derive(Debug)]
-pub struct Section {
-    pub title: String,
-    pub items: Vec<Item>,
-}
-
-#[derive(Debug)]
-pub struct Item {
-    pub keys: Vec<String>,
-    pub description: String,
+pub struct Table {
+    pub name: String,
+    // Entries have the form ([List of Keys],[Description])
+    pub entries: Vec<(Vec<String>, String)>,
 }
 
 impl App {
-    pub fn new() -> App {
+    pub fn new(config: Option<Config>) -> App {
         App {
             quit: false,
-            has_config: false,
-            current_section: 0,
-            sections: vec![],
-            number_of_sections: 0,
-            primary_color: ratatui::style::Color::White,
-            highlight_color: ratatui::style::Color::Blue,
+            page_number: 0,
+            config: config,
         }
+    }
+
+    pub fn has_config(&self) -> bool {
+        return self.config.is_some();
+    }
+
+    pub fn current_page_number(&self) -> usize {
+        return self.page_number;
+    }
+
+    pub fn number_of_pages(&self) -> usize {
+        return match &self.config {
+            Some(c) => c.tables.len(),
+            None => 0,
+        };
     }
 
     pub fn increment_page(&mut self) {
-        if self.current_section == self.number_of_sections - 1 {
+        if self.page_number == self.number_of_pages() - 1 {
             return;
         }
-        self.current_section += 1;
+        self.page_number += 1;
     }
 
     pub fn decrement_page(&mut self) {
-        if self.current_section == 0 {
+        if self.page_number == 0 {
             return;
         }
-
-        self.current_section -= 1;
+        self.page_number -= 1;
     }
 
-    pub fn get_current_section(&self) -> Result<&Section, ()> {
-        if !self.has_config {
-            return Err(());
-        }
-
-        return Ok(&self.sections[self.current_section]);
-    }
-
-    pub fn add_test_section(&mut self) {
-        let items = vec![
-            Item {
-                keys: vec![
-                    String::from("CTRL"),
-                    String::from("ALT"),
-                    String::from("DEL"),
-                ],
-                description: String::from("Lock Screen"),
-            },
-            Item {
-                keys: vec![String::from("CTRL"), String::from("C")],
-                description: String::from("Interupt current Application"),
-            },
-            Item {
-                keys: vec![String::from("q")],
-                description: String::from("Sometimes a quit button"),
-            },
-        ];
-
-        let test_section = Section {
-            title: format!("Test section {}", self.number_of_sections),
-            items: items,
+    pub fn get_current_page(&self) -> Result<&Table, ()> {
+        return match &self.config {
+            Some(c) => c.tables.get(self.page_number).ok_or(()),
+            None => Err(()),
         };
+    }
 
-        self.sections.push(test_section);
-        self.number_of_sections += 1;
-        self.has_config = true;
+    pub fn primary_color(&self) -> ratatui::style::Color {
+        return match &self.config {
+            Some(c) => c.primary_color,
+            None => ratatui::style::Color::Black,
+        };
+    }
+
+    pub fn highlight_color(&self) -> ratatui::style::Color {
+        return match &self.config {
+            Some(c) => c.highlight_color,
+            None => ratatui::style::Color::LightBlue,
+        };
+    }
+}
+
+impl Config {
+    pub fn new() -> Config {
+        Config {
+            primary_color: ratatui::style::Color::White,
+            highlight_color: ratatui::style::Color::Cyan,
+            tables: Vec::new(),
+        }
     }
 }
