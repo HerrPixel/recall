@@ -1,0 +1,18 @@
+[recall]
+primary_color = 2
+highlight_color = 105
+
+[keys.general]
+yazi = { keys = ["yazi"], description = "File manager TUI: yazi" }
+yazi-help = { keys = ["~"], description = "Yazi: Open help menu" }
+ox = { keys = ["ox"], description = "Terminal editor: Ox" }
+ox-help = { keys = ["Ctrl", "H"], description = "Ox: Open help menu" }
+nmtui = { keys = ["nmtui"], description = "Network manager TUI" }
+bluetui = { keys = ["bluetui"], description = "Bluetooth manager TUI" }
+bluetui-help = { keys = ["?"], description = "bluetui: Open help menu" }
+
+
+[keys.yazi]
+
+
+[keys.ox]
