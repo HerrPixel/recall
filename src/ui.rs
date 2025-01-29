@@ -6,7 +6,6 @@ use ratatui::{
 };
 
 use crate::app::App;
-use crate::app::Table;
 
 pub fn ui(frame: &mut Frame, app: &App) {
     if !app.has_config() {
