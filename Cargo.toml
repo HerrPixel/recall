@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.95"
+indexmap = { version = "2.7.1", features = ["serde"] }
 ratatui = "0.29.0"
 serde = { version = "1.0.217", features = ["derive"] }
 toml = "0.8.19"

@@ -1,18 +1,19 @@
-use std::{collections::HashMap, fs, path::PathBuf};
+use std::{fs, path::PathBuf};
 
 use anyhow::Context;
+use indexmap::IndexMap;
 use serde::Deserialize;
 
 use crate::app::{Config, Table};
 
 // The key for an entry does not matter, only the keys and description values matter.
 // Still, a key uniquely identifies an entry, therefore the datatype is a map: String -> Entries
-type PageToml = HashMap<String, EntryToml>;
+type PageToml = IndexMap<String, EntryToml>;
 
 #[derive(Debug, Deserialize)]
 struct ConfigToml {
     recall: Option<RecallToml>,
-    keys: HashMap<String, PageToml>,
+    keys: IndexMap<String, PageToml>,
 }
 
 #[derive(Debug, Deserialize)]
