@@ -1,3 +1,4 @@
+use clap::Parser;
 use config::{default_config_path, read_from_config};
 use ratatui::{
     crossterm::event::{self, Event, KeyCode, KeyEvent, KeyModifiers},
@@ -8,18 +9,22 @@ use std::io;
 use ui::ui;
 
 mod app;
+mod cli;
 mod config;
 mod ui;
 
 use crate::app::App;
+use crate::cli::Cli;
 
 fn main() -> Result<(), anyhow::Error> {
-    let mut terminal = ratatui::init();
+    let cli = Cli::parse();
 
-    let config_path = default_config_path()?;
-
+    let config_path = cli.config.unwrap_or(default_config_path()?);
+    // TODO: Handle non-existent config without throwing an error
     let config = read_from_config(config_path)?;
-    let mut app = app::App::new(Some(config));
+    let mut app = App::new(Some(config));
+
+    let mut terminal = ratatui::init();
 
     run(&mut terminal, &mut app)?;
     ratatui::restore();
