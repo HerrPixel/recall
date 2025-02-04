@@ -1,12 +1,13 @@
 use std::{fs, path::PathBuf};
 
-use anyhow::Context;
+use anyhow::{anyhow, Context, Error};
+use directories::ProjectDirs;
 use indexmap::IndexMap;
 use serde::Deserialize;
 
 use crate::app::{Config, Table};
 
-// The key for an entry does not matter, only the keys and description values matter.
+// The key for an entry does not matter, only the inline table as a value matters.
 // Still, a key uniquely identifies an entry, therefore the datatype is a map: String -> Entries
 type PageToml = IndexMap<String, EntryToml>;
 
@@ -28,10 +29,19 @@ struct EntryToml {
     description: String,
 }
 
+pub fn default_config_path() -> Result<PathBuf, Error> {
+    let path =
+        ProjectDirs::from("", "", "recall").ok_or(anyhow!("No valid config directory found"))?;
+
+    return Ok(path.config_dir().join("config.toml"));
+}
+
 pub fn read_from_config(path: PathBuf) -> Result<Config, anyhow::Error> {
     let file = fs::read_to_string(&path).with_context(|| match path.to_str() {
-        Some(s) => format!("Failed to read config from {}", s),
+        // Broken or non-existent file path
         None => format!("Invalid file path"),
+        // Some other error that prevents us from reading the file, like permissions
+        Some(s) => format!("Failed to read config from {}", s),
     })?;
 
     let config_toml: ConfigToml =
