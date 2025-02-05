@@ -27,7 +27,7 @@ fn main() -> Result<(), anyhow::Error> {
 
     handle_subcommands(cli.command, &mut app, config_path.clone())?;
 
-    if app.quit {
+    if !app.active {
         return Ok(());
     }
     // TODO: Handle non-existent config without throwing an error
@@ -43,7 +43,7 @@ fn main() -> Result<(), anyhow::Error> {
 }
 
 fn run<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> Result<(), Error> {
-    while !app.quit {
+    while app.active {
         terminal.draw(|f| ui(f, app))?;
 
         if let Event::Key(key) = event::read()? {
@@ -57,13 +57,13 @@ fn run<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> Result<(), Erro
 fn handle_key_event(key: KeyEvent, app: &mut App) {
     if key.modifiers == KeyModifiers::CONTROL {
         if let KeyCode::Char('c') = key.code {
-            app.quit = true
+            app.active = false;
         }
     } else {
         match key.code {
             KeyCode::Left => app.decrement_page(),
             KeyCode::Right => app.increment_page(),
-            KeyCode::Char('q') => app.quit = true,
+            KeyCode::Char('q') => app.active = true,
             _ => {}
         }
     }
@@ -77,7 +77,7 @@ fn handle_subcommands(
     if let Some(Commands::Init) = command {
         // Remove this in favor of logging
         println!("{}", init_config(config_path.clone())?);
-        app.quit = true;
+        app.active = false;
     }
     Ok(())
 }

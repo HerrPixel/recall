@@ -1,28 +1,37 @@
 #[derive(Debug)]
 pub struct App {
-    pub quit: bool,
+    pub active: bool,
     page_number: usize,
+    // We should change this to be non-optional
     config: Option<Config>,
 }
 
+type Color = ratatui::style::Color;
+
 #[derive(Debug)]
 pub struct Config {
-    pub primary_color: ratatui::style::Color,
-    pub highlight_color: ratatui::style::Color,
+    pub primary_color: Color,
+    pub highlight_color: Color,
     pub tables: Vec<Table>,
 }
+
+type KeyList = Vec<String>;
+type Description = String;
 
 #[derive(Debug)]
 pub struct Table {
     pub name: String,
     // Entries have the form ([List of Keys],[Description])
-    pub entries: Vec<(Vec<String>, String)>,
+    pub entries: Vec<(KeyList, Description)>,
 }
+
+const DEFAULT_PRIMARY_COLOR: Color = Color::White;
+const DEFAULT_SECONDARY_COLOR: Color = Color::Cyan;
 
 impl App {
     pub fn new() -> App {
         App {
-            quit: false,
+            active: true,
             page_number: 0,
             config: None,
         }
@@ -86,8 +95,8 @@ impl App {
 impl Config {
     pub fn new() -> Config {
         Config {
-            primary_color: ratatui::style::Color::White,
-            highlight_color: ratatui::style::Color::Cyan,
+            primary_color: DEFAULT_PRIMARY_COLOR,
+            highlight_color: DEFAULT_SECONDARY_COLOR,
             tables: Vec::new(),
         }
     }
