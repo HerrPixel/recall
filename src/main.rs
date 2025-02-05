@@ -1,28 +1,38 @@
+use std::path::PathBuf;
+
+use anyhow::{Error, Ok};
 use clap::Parser;
-use config::{default_config_path, read_from_config};
+use cli::Commands;
 use ratatui::{
     crossterm::event::{self, Event, KeyCode, KeyEvent, KeyModifiers},
     prelude::Backend,
     Terminal,
 };
-use std::io;
-use ui::ui;
 
 mod app;
 mod cli;
 mod config;
 mod ui;
 
-use crate::app::App;
-use crate::cli::Cli;
+use app::App;
+use cli::Cli;
+use config::{default_config_path, init_config, read_from_config};
+use ui::ui;
 
 fn main() -> Result<(), anyhow::Error> {
     let cli = Cli::parse();
 
     let config_path = cli.config.unwrap_or(default_config_path()?);
+    let mut app = App::new();
+
+    handle_subcommands(cli.command, &mut app, config_path.clone())?;
+
+    if app.quit {
+        return Ok(());
+    }
     // TODO: Handle non-existent config without throwing an error
     let config = read_from_config(config_path)?;
-    let mut app = App::new(Some(config));
+    app.add_config(config);
 
     let mut terminal = ratatui::init();
 
@@ -32,7 +42,7 @@ fn main() -> Result<(), anyhow::Error> {
     Ok(())
 }
 
-fn run<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<()> {
+fn run<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> Result<(), Error> {
     while app.quit == false {
         terminal.draw(|f| ui(f, app))?;
 
@@ -58,4 +68,20 @@ fn handle_key_event(key: KeyEvent, app: &mut App) {
             _ => {}
         }
     }
+}
+
+fn handle_subcommands(
+    command: Option<Commands>,
+    app: &mut App,
+    config_path: PathBuf,
+) -> Result<(), Error> {
+    match command {
+        // When the init subcommand is used, generate the config and do nothing else (aka return)
+        Some(Commands::Init) => {
+            println!("{}", init_config(config_path.clone())?);
+            app.quit = true;
+        }
+        _ => {}
+    }
+    Ok(())
 }

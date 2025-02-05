@@ -1,6 +1,6 @@
 use std::{fs, path::PathBuf};
 
-use anyhow::{anyhow, Context, Error};
+use anyhow::{anyhow, bail, Context, Error, Ok};
 use directories::ProjectDirs;
 use indexmap::IndexMap;
 use serde::Deserialize;
@@ -70,4 +70,49 @@ pub fn read_from_config(path: PathBuf) -> Result<Config, anyhow::Error> {
     }
 
     Ok(config)
+}
+
+pub fn init_config(path: PathBuf) -> Result<String, Error> {
+    if is_malformed_path(&path) {
+        bail!("Broken file path")
+    }
+
+    let binding = path.clone();
+    let path_str = binding.to_str().unwrap();
+
+    if path
+        .try_exists()
+        .with_context(|| format!("Can't check existence of file {}", path_str))?
+    {
+        bail!("Path {} already exists!", path_str)
+    }
+
+    let toml_str = r#"
+    # General settings for recall reside in this table
+    [recall]
+    # Colors are u8-encoded numbers as specified by the ANSI Color Table
+    primary_color = 2
+    highlight_color = 105
+
+    # Each subtable under keys specifies a new page
+    # The name of a page is the name of the subtable
+    [keys.general]
+    # Key names don't matter, these are just for uniquely identifying an entry
+
+    # The keys-value takes an array of strings used as the keys to press for a shortcut
+    # The description-value takes a string to be displayed as the description for the corresponding entry
+
+    RecallClose = { keys = ["q"], description = "Closes recall" }
+    TTYSwitch = { keys = ["Ctrl","Alt","F2"], description = "Switches to TTY 2, replace Fn number with desired TTY" }
+
+    [keys.empty_page]
+    "#;
+
+    fs::write(path, toml_str)?;
+
+    Ok(format!("Created example config in {}", path_str))
+}
+
+fn is_malformed_path(path: &PathBuf) -> bool {
+    path.to_str().is_none()
 }

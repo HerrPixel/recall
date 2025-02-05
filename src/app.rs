@@ -20,12 +20,16 @@ pub struct Table {
 }
 
 impl App {
-    pub fn new(config: Option<Config>) -> App {
+    pub fn new() -> App {
         App {
             quit: false,
             page_number: 0,
-            config: config,
+            config: None,
         }
+    }
+
+    pub fn add_config(&mut self, config: Config) {
+        self.config = Some(config);
     }
 
     pub fn has_config(&self) -> bool {
