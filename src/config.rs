@@ -88,25 +88,28 @@ pub fn init_config(path: PathBuf) -> Result<String, Error> {
     }
 
     let toml_str = r#"
-    # General settings for recall reside in this table
-    [recall]
-    # Colors are u8-encoded numbers as specified by the ANSI Color Table
-    primary_color = 2
-    highlight_color = 105
+# General settings for recall reside in this table
+[recall]        
+# Colors are u8-encoded numbers as specified by the ANSI Color Table
+primary_color = 2
+highlight_color = 105
 
-    # Each subtable under keys specifies a new page
-    # The name of a page is the name of the subtable
-    [keys.general]
-    # Key names don't matter, these are just for uniquely identifying an entry
+# Each subtable under keys specifies a new page
+# The name of a page is the name of the subtable
+[keys.general]
+# The keys-value takes an array of strings used as the keys to press for a shortcut
+# The description-value takes a string to be displayed as the description for the corresponding entry
+RecallClose = { keys = ["q"], description = "Closes recall" }
+TTYSwitch = { keys = ["Ctrl","Alt","F2"], description = "Switches to TTY 2, replace Fn number with desired TTY" }
 
-    # The keys-value takes an array of strings used as the keys to press for a shortcut
-    # The description-value takes a string to be displayed as the description for the corresponding entry
+[keys.bash]
+# Key names don't matter, these are just for uniquely identifying an entry in a table
+Copy = { keys = ["Ctrl","Shift","C"], description = "Copy selected text" }
+Paste = { keys = ["Ctrl","Shift","V"], description = "Paste selected text" }
 
-    RecallClose = { keys = ["q"], description = "Closes recall" }
-    TTYSwitch = { keys = ["Ctrl","Alt","F2"], description = "Switches to TTY 2, replace Fn number with desired TTY" }
-
-    [keys.empty_page]
-    "#;
+# Empty tables are also allowed (but useless)
+[keys.empty_page]
+"#;
 
     fs::write(path, toml_str)?;
 
