@@ -23,6 +23,12 @@ Options:
 
 ## Installation
 
+Install with cargo:
+
+```sh
+cargo install --git https://github.com/HerrPixel/recall
+```
+
 ## Configuration
 
 Configuration is done via a configuration placed in `{CONFIG_DIR}/recall/config.toml` where `{CONFIG_DIR}` is your platform specific configuration directory, for example `$XDG_CONFIG_HOME` or `$HOME/.config` on Linux. See also the path mentioned when running `recall init`.
