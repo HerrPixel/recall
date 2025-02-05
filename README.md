@@ -60,3 +60,9 @@ Paste = { keys = ["Ctrl","Shift","V"], description = "Paste selected text" }
 # Empty tables are also allowed (but useless)
 [keys.empty_page]
 ```
+
+## Changelog
+
+### [1.0.0] 5-2-2025
+
+Initial Release
