@@ -33,18 +33,18 @@ impl App {
     }
 
     pub fn has_config(&self) -> bool {
-        return self.config.is_some();
+        self.config.is_some()
     }
 
     pub fn current_page_number(&self) -> usize {
-        return self.page_number;
+        self.page_number
     }
 
     pub fn number_of_pages(&self) -> usize {
-        return match &self.config {
+        match &self.config {
             Some(c) => c.tables.len(),
             None => 0,
-        };
+        }
     }
 
     pub fn increment_page(&mut self) {
@@ -62,24 +62,24 @@ impl App {
     }
 
     pub fn get_current_page(&self) -> Result<&Table, ()> {
-        return match &self.config {
+        match &self.config {
             Some(c) => c.tables.get(self.page_number).ok_or(()),
             None => Err(()),
-        };
+        }
     }
 
     pub fn primary_color(&self) -> ratatui::style::Color {
-        return match &self.config {
+        match &self.config {
             Some(c) => c.primary_color,
             None => ratatui::style::Color::Black,
-        };
+        }
     }
 
     pub fn highlight_color(&self) -> ratatui::style::Color {
-        return match &self.config {
+        match &self.config {
             Some(c) => c.highlight_color,
             None => ratatui::style::Color::LightBlue,
-        };
+        }
     }
 }
 

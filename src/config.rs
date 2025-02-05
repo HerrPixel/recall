@@ -1,4 +1,7 @@
-use std::{fs, path::PathBuf};
+use std::{
+    fs,
+    path::{Path, PathBuf},
+};
 
 use anyhow::{anyhow, bail, Context, Error, Ok};
 use directories::ProjectDirs;
@@ -33,19 +36,19 @@ pub fn default_config_path() -> Result<PathBuf, Error> {
     let path =
         ProjectDirs::from("", "", "recall").ok_or(anyhow!("No valid config directory found"))?;
 
-    return Ok(path.config_dir().join("config.toml"));
+    Ok(path.config_dir().join("config.toml"))
 }
 
 pub fn read_from_config(path: PathBuf) -> Result<Config, anyhow::Error> {
     let file = fs::read_to_string(&path).with_context(|| match path.to_str() {
         // Broken or non-existent file path
-        None => format!("Invalid file path"),
+        None => "Invalid file path".to_string(),
         // Some other error that prevents us from reading the file, like permissions
         Some(s) => format!("Failed to read config from {}", s),
     })?;
 
     let config_toml: ConfigToml =
-        toml::from_str(&file).with_context(|| format!("Failed to read toml syntax"))?;
+        toml::from_str(&file).context("Failed to read toml syntax".to_string())?;
 
     let mut config = Config::new();
 
@@ -116,6 +119,6 @@ Paste = { keys = ["Ctrl","Shift","V"], description = "Paste selected text" }
     Ok(format!("Created example config in {}", path_str))
 }
 
-fn is_malformed_path(path: &PathBuf) -> bool {
+fn is_malformed_path(path: &Path) -> bool {
     path.to_str().is_none()
 }

@@ -77,7 +77,7 @@ fn get_line_from_entry<'a>(entry: &'a (Vec<String>, String), app: &'a App) -> Li
 
     line.push(Span::from(description).fg(app.primary_color()));
 
-    return Line::from(line);
+    Line::from(line)
 }
 
 fn render_no_config_hint(frame: &mut Frame) {

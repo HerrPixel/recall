@@ -43,7 +43,7 @@ fn main() -> Result<(), anyhow::Error> {
 }
 
 fn run<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> Result<(), Error> {
-    while app.quit == false {
+    while !app.quit {
         terminal.draw(|f| ui(f, app))?;
 
         if let Event::Key(key) = event::read()? {
@@ -56,9 +56,8 @@ fn run<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> Result<(), Erro
 
 fn handle_key_event(key: KeyEvent, app: &mut App) {
     if key.modifiers == KeyModifiers::CONTROL {
-        match key.code {
-            KeyCode::Char('c') => app.quit = true,
-            _ => {}
+        if let KeyCode::Char('c') = key.code {
+            app.quit = true
         }
     } else {
         match key.code {
@@ -75,13 +74,10 @@ fn handle_subcommands(
     app: &mut App,
     config_path: PathBuf,
 ) -> Result<(), Error> {
-    match command {
-        // When the init subcommand is used, generate the config and do nothing else (aka return)
-        Some(Commands::Init) => {
-            println!("{}", init_config(config_path.clone())?);
-            app.quit = true;
-        }
-        _ => {}
+    if let Some(Commands::Init) = command {
+        // Remove this in favor of logging
+        println!("{}", init_config(config_path.clone())?);
+        app.quit = true;
     }
     Ok(())
 }
