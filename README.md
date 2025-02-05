@@ -3,11 +3,12 @@
 <p align=center>Recall keybinds, shortcuts, commands and more</p>
 
 <p align=center>
-  <img src="https://github.com/user-attachments/assets/3fd3dfd9-82be-48cd-8c68-50f514a5f427" width="500">
+  <img alt="recall_screenshot" src="https://github.com/user-attachments/assets/3fd3dfd9-82be-48cd-8c68-50f514a5f427" width="500">
 </p>
 
 ## Usage
-```sh
+
+```raw
 Usage: recall [OPTIONS] [COMMAND]
 
 Commands:
@@ -22,8 +23,6 @@ Options:
 
 ## Installation
 
-
-
 ## Configuration
 
 Configuration is done via a configuration placed in `{CONFIG_DIR}/recall/config.toml` where `{CONFIG_DIR}` is your platform specific configuration directory, for example `$XDG_CONFIG_HOME` or `$HOME/.config` on Linux. See also the path mentioned when running `recall init`.
@@ -31,6 +30,7 @@ Configuration is done via a configuration placed in `{CONFIG_DIR}/recall/config.
 You may also specifiy a different location for the configuration file by using the `--config` flag.
 
 A configuration file has the following format:
+
 ```toml
 # General settings for recall reside in this table
 [recall]        
@@ -54,4 +54,3 @@ Paste = { keys = ["Ctrl","Shift","V"], description = "Paste selected text" }
 # Empty tables are also allowed (but useless)
 [keys.empty_page]
 ```
-
