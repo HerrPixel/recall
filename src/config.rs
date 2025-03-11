@@ -3,9 +3,10 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use anyhow::{anyhow, bail, Context, Error, Ok};
+use anyhow::{anyhow, bail, Context, Result};
 use directories::ProjectDirs;
 use indexmap::IndexMap;
+use log::trace;
 use serde::Deserialize;
 
 use crate::app::{Config, Table};
@@ -32,14 +33,19 @@ struct EntryToml {
     description: String,
 }
 
-pub fn default_config_path() -> Result<PathBuf, Error> {
+pub fn default_config_path() -> Result<PathBuf> {
     let path =
         ProjectDirs::from("", "", "recall").ok_or(anyhow!("No valid config directory found"))?;
 
-    Ok(path.config_dir().join("config.toml"))
+    let config_path = path.config_dir().join("config.toml");
+
+    // What happens if this path contains non unicode characters?
+    trace!("Default config path is {}", config_path.to_str().unwrap());
+
+    Ok(config_path)
 }
 
-pub fn read_from_config(path: PathBuf) -> Result<Config, anyhow::Error> {
+pub fn read_from_config(path: PathBuf) -> Result<Config> {
     let file = fs::read_to_string(&path).with_context(|| match path.to_str() {
         // Broken or non-existent file path
         None => "Invalid file path".to_string(),
@@ -55,10 +61,14 @@ pub fn read_from_config(path: PathBuf) -> Result<Config, anyhow::Error> {
     // Setting optional color settings
     if let Some(recall_config) = config_toml.recall {
         if let Some(primary_color) = recall_config.primary_color {
+            trace!("Setting primary color to {}", primary_color);
+
             config.primary_color = ratatui::style::Color::Indexed(primary_color);
         }
 
         if let Some(highlight_color) = recall_config.highlight_color {
+            trace!("Setting highlight color to {}", highlight_color);
+
             config.highlight_color = ratatui::style::Color::Indexed(highlight_color);
         }
     }
@@ -67,15 +77,25 @@ pub fn read_from_config(path: PathBuf) -> Result<Config, anyhow::Error> {
     for (name, page) in config_toml.keys {
         let mut entries = Vec::new();
         for (_, entry) in page {
+            trace!(
+                "Adding entry with keys [{}] and description {} to table with name {}",
+                entry.keys.join(","),
+                entry.description,
+                name
+            );
+
             entries.push((entry.keys, entry.description));
         }
+
+        trace!("Add table {} to config", name);
+
         config.tables.push(Table { name, entries });
     }
 
     Ok(config)
 }
 
-pub fn init_config(path: PathBuf) -> Result<String, Error> {
+pub fn init_config(path: PathBuf) -> Result<String> {
     if is_malformed_path(&path) {
         bail!("Broken file path")
     }
@@ -90,6 +110,7 @@ pub fn init_config(path: PathBuf) -> Result<String, Error> {
         bail!("Path {} already exists!", path_str)
     }
 
+    // Do this semantically instead of a string perhaps.
     let toml_str = r#"
 # General settings for recall reside in this table
 [recall]        
