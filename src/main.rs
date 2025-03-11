@@ -46,6 +46,7 @@ fn main() -> Result<()> {
 
     let mut app = App::new();
 
+    // This log might be the job of the handle_subcommands function
     trace!("Parsing CLI subcommands");
     handle_subcommands(cli.command, &mut app, config_path.clone())?;
 
@@ -54,6 +55,7 @@ fn main() -> Result<()> {
         return Ok(());
     }
 
+    // This log might be the job of the config_path function
     info!("Reading config from {}", config_path.to_str().unwrap());
     // TODO: Handle non-existent config without throwing an error
     let config = read_from_config(config_path)?;
@@ -127,6 +129,7 @@ fn handle_subcommands(
     // TODO: When more subcommands are added, do `match` instead of `if let`
 
     if let Some(Commands::Init) = command {
+        // This log might be the job of the init_config function
         // TODO: What if path contains illegal unicode symbols?
         //       -> Dangerous unwrap
         info!(
