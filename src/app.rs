@@ -1,3 +1,5 @@
+use log::debug;
+
 #[derive(Debug)]
 pub struct App {
     pub active: bool,
@@ -49,6 +51,7 @@ impl App {
         self.page_number
     }
 
+    // Does this need logging if no pages are found?
     pub fn number_of_pages(&self) -> usize {
         match &self.config {
             Some(c) => c.tables.len(),
@@ -58,6 +61,7 @@ impl App {
 
     pub fn increment_page(&mut self) {
         if self.page_number == self.number_of_pages() - 1 {
+            debug!("Page counter is on last page, can't increment");
             return;
         }
         self.page_number += 1;
@@ -65,11 +69,13 @@ impl App {
 
     pub fn decrement_page(&mut self) {
         if self.page_number == 0 {
+            debug!("Page counter is on first page, can't decrement");
             return;
         }
         self.page_number -= 1;
     }
 
+    // Does this need logging if there is no current page?
     pub fn get_current_page(&self) -> Result<&Table, ()> {
         match &self.config {
             Some(c) => c.tables.get(self.page_number).ok_or(()),
@@ -77,6 +83,7 @@ impl App {
         }
     }
 
+    // TODO: Default colors are currently magic numbers
     pub fn primary_color(&self) -> ratatui::style::Color {
         match &self.config {
             Some(c) => c.primary_color,
@@ -84,6 +91,7 @@ impl App {
         }
     }
 
+    // TODO: Default colors are currently magic numbers
     pub fn highlight_color(&self) -> ratatui::style::Color {
         match &self.config {
             Some(c) => c.highlight_color,
