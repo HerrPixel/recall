@@ -1,3 +1,4 @@
+use anyhow::{anyhow, Result};
 use log::debug;
 
 #[derive(Debug)]
@@ -76,10 +77,13 @@ impl App {
     }
 
     // Does this need logging if there is no current page?
-    pub fn get_current_page(&self) -> Result<&Table, ()> {
+    pub fn get_current_page(&self) -> Result<&Table> {
         match &self.config {
-            Some(c) => c.tables.get(self.page_number).ok_or(()),
-            None => Err(()),
+            Some(c) => c.tables.get(self.page_number).ok_or(anyhow!(
+                "Can not get page number {} from config",
+                self.page_number,
+            )),
+            None => Err(anyhow!("Can not get current page with no config")),
         }
     }
 
