@@ -7,7 +7,9 @@ edition = "2021"
 anyhow = "1.0.95"
 clap = { version = "4.5.28", features = ["derive"] }
 directories = "6.0.0"
+env_logger = "0.11.7"
 indexmap = { version = "2.7.1", features = ["serde"] }
+log = "0.4.26"
 ratatui = "0.29.0"
 serde = { version = "1.0.217", features = ["derive"] }
 toml = "0.8.19"
