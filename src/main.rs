@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{ops::Not, path::PathBuf};
 
 use anyhow::Result;
 use clap::Parser;
@@ -50,7 +50,7 @@ fn main() -> Result<()> {
     trace!("Parsing CLI subcommands");
     handle_subcommands(cli.command, &mut app, config_path.clone())?;
 
-    if !app.active {
+    if app.is_active().not() {
         info!("Quitting due to completed subcommand");
         return Ok(());
     }
@@ -77,7 +77,7 @@ fn main() -> Result<()> {
 }
 
 fn run<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> Result<()> {
-    while app.active {
+    while app.is_active() {
         terminal.draw(|f| ui(f, app))?;
 
         // TODO: Non-blocking with poll
@@ -96,9 +96,9 @@ fn handle_key_event(key: KeyEvent, app: &mut App) {
     // Is this the correct way to handle SIGINTs and SIGKILLs?
     if key.modifiers == KeyModifiers::CONTROL {
         if let KeyCode::Char('c') = key.code {
+            // TODO: Reformulate Quitting messages
             info!("Quitting due to received SIGINT Signal");
-            // TODO: Might want to add reasond for quitting
-            app.active = false;
+            app.quit(app::QuitReason::Sigint);
         }
     } else {
         match key.code {
@@ -112,7 +112,7 @@ fn handle_key_event(key: KeyEvent, app: &mut App) {
             }
             KeyCode::Char('q') => {
                 info!("Quitting due to pressed 'quit' button");
-                app.active = false
+                app.quit(app::QuitReason::CloseKeyPressed);
             }
             _ => {
                 trace!("Unused key(s) pressed: {}+{}", key.modifiers, key.code);
@@ -140,7 +140,7 @@ fn handle_subcommands(
         let _ = init_config(config_path)?;
 
         // TODO: Use a state enum instead of a boolean. Is more semantically meaningful.
-        app.active = false;
+        app.quit(app::QuitReason::Other("Completed subcommand".to_owned()));
     }
     Ok(())
 }

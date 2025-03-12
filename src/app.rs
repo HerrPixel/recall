@@ -1,12 +1,25 @@
-use anyhow::{anyhow, Result};
+use anyhow::{anyhow, Ok, Result};
 use log::debug;
 
 #[derive(Debug)]
 pub struct App {
-    pub active: bool,
+    state: AppState,
     page_number: usize,
     // We should change this to be non-optional
     config: Option<Config>,
+}
+
+#[derive(Debug)]
+pub enum AppState {
+    Running,
+    Quitting(QuitReason),
+}
+
+#[derive(Debug)]
+pub enum QuitReason {
+    Sigint,
+    CloseKeyPressed,
+    Other(String),
 }
 
 type Color = ratatui::style::Color;
@@ -34,10 +47,30 @@ const DEFAULT_SECONDARY_COLOR: Color = Color::Cyan;
 impl App {
     pub fn new() -> App {
         App {
-            active: true,
+            state: AppState::Running,
             page_number: 0,
             config: None,
         }
+    }
+
+    pub fn is_active(&self) -> bool {
+        matches!(self.state, AppState::Running)
+    }
+
+    pub fn quit(&mut self, reason: QuitReason) {
+        self.state = AppState::Quitting(reason);
+    }
+
+    pub fn get_quit_reason(&self) -> Option<&str> {
+        if let AppState::Quitting(reason) = &self.state {
+            return Some(match reason {
+                QuitReason::Sigint => "Received 'SIGINT' signal",
+                QuitReason::CloseKeyPressed => "'Close' key was pressed",
+                QuitReason::Other(s) => s,
+            });
+        }
+
+        None
     }
 
     pub fn add_config(&mut self, config: Config) {
