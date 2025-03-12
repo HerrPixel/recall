@@ -1,7 +1,10 @@
+use std::{cmp::max, ops::Not};
+
 use ratatui::{
+    layout::Constraint,
     style::{Style, Stylize},
     text::{Line, Span, Text},
-    widgets::{Block, Paragraph},
+    widgets::{Block, Paragraph, Row, Table},
     Frame,
 };
 
@@ -23,6 +26,7 @@ pub fn ui(frame: &mut Frame, app: &App) {
         .bold();
 
     let legend = Line::from(vec![
+        //" <Left> ".fg(app.highlight_color()),
         Span::styled(" <Left> ", Style::from(app.highlight_color())),
         Span::styled("Previous Page", Style::from(app.primary_color())),
         Span::styled(" <Right> ", Style::from(app.highlight_color())),
@@ -43,15 +47,55 @@ pub fn ui(frame: &mut Frame, app: &App) {
         .title(title.centered())
         .title_bottom(legend.centered());
 
-    let items: Vec<Line> = curr_table
-        .entries
-        .iter()
-        .map(|entry| get_line_from_entry(entry, app))
-        .collect();
+    let mut rows = Vec::new();
 
-    let p = Paragraph::new(Text::from(items)).centered().block(block);
+    let mut maximum_length = 0;
 
-    frame.render_widget(p, frame.area());
+    for entry in &curr_table.entries {
+        let shortcut = get_shortcut(entry, app);
+        maximum_length = max(maximum_length, shortcut.width());
+
+        rows.push(Row::new(vec![
+            Text::from(shortcut),
+            Text::from(entry.1.as_str()),
+        ]));
+    }
+
+    let table = Table::new(
+        rows,
+        vec![
+            Constraint::Length(maximum_length as u16),
+            Constraint::Fill(1),
+        ],
+    )
+    .block(block);
+
+    frame.render_widget(table, frame.area());
+}
+
+fn get_shortcut<'a>(entry: &(Vec<String>, String), app: &'a App) -> Line<'a> {
+    let shortcut_components = &entry.0;
+
+    let mut shortcut = Line::default();
+
+    if shortcut_components.is_empty().not() {
+        shortcut.push_span(
+            shortcut_components
+                .first()
+                .unwrap()
+                .clone()
+                .fg(app.highlight_color())
+                .bold(),
+        );
+
+        // TODO: use as_str() instead of cloning
+        for component in shortcut_components.iter().skip(1) {
+            shortcut.push_span("+".fg(app.primary_color()));
+            shortcut.push_span(component.clone().fg(app.highlight_color()).bold());
+        }
+    }
+
+    shortcut
 }
 
 fn get_line_from_entry<'a>(entry: &'a (Vec<String>, String), app: &'a App) -> Line<'a> {
