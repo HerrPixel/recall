@@ -55,8 +55,6 @@ fn main() -> Result<()> {
         return Ok(());
     }
 
-    // This log might be the job of the config_path function
-    info!("Reading config from {}", config_path.to_str().unwrap());
     // TODO: Handle non-existent config without throwing an error
     let config = read_from_config(config_path)?;
 

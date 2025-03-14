@@ -6,7 +6,7 @@ use std::{
 use anyhow::{anyhow, bail, Context, Result};
 use directories::ProjectDirs;
 use indexmap::IndexMap;
-use log::trace;
+use log::{info, trace};
 use serde::Deserialize;
 
 use crate::app::{Config, Table};
@@ -46,12 +46,12 @@ pub fn default_config_path() -> Result<PathBuf> {
 }
 
 pub fn read_from_config(path: PathBuf) -> Result<Config> {
-    let file = fs::read_to_string(&path).with_context(|| match path.to_str() {
-        // Broken or non-existent file path
-        None => "Invalid file path".to_string(),
-        // Some other error that prevents us from reading the file, like permissions
-        Some(s) => format!("Failed to read config from {}", s),
-    })?;
+    let path_str_or_replacement = path.to_str().unwrap_or("Non UTF-8 path");
+
+    info!("Reading config from {}", path_str_or_replacement);
+
+    let file = fs::read_to_string(&path)
+        .with_context(|| format!("Failed to read config from {}", path_str_or_replacement))?;
 
     let config_toml: ConfigToml =
         toml::from_str(&file).context("Failed to read toml syntax".to_string())?;
