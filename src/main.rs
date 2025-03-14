@@ -1,4 +1,4 @@
-use std::{ops::Not, path::PathBuf};
+use std::path::PathBuf;
 
 use anyhow::{Ok, Result};
 use clap::Parser;
@@ -15,9 +15,7 @@ mod cli;
 mod config;
 mod ui;
 
-use app::{App, AppState};
-
-use app::QuitReason;
+use app::{App, AppState, QuitReason};
 use cli::Cli;
 use config::{default_config_path, init_config, read_from_config};
 use ui::ui;
@@ -141,7 +139,6 @@ fn handle_subcommands(command: Option<Commands>, config_path: PathBuf) -> Result
 
         let _ = init_config(config_path)?;
 
-        // TODO: Use a state enum instead of a boolean. Is more semantically meaningful.
         return Ok(AppState::Quitting(QuitReason::InitSubcommandCompleted));
     }
     Ok(AppState::Running)
