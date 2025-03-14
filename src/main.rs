@@ -1,6 +1,6 @@
 use std::{ops::Not, path::PathBuf};
 
-use anyhow::Result;
+use anyhow::{Ok, Result};
 use clap::Parser;
 use cli::Commands;
 use log::{info, trace};
@@ -15,7 +15,9 @@ mod cli;
 mod config;
 mod ui;
 
-use app::App;
+use app::{App, AppState};
+
+use app::QuitReason;
 use cli::Cli;
 use config::{default_config_path, init_config, read_from_config};
 use ui::ui;
@@ -48,10 +50,10 @@ fn main() -> Result<()> {
 
     // This log might be the job of the handle_subcommands function
     trace!("Parsing CLI subcommands");
-    handle_subcommands(cli.command, &mut app, config_path.clone())?;
+    let state_after_subcommands = handle_subcommands(cli.command, config_path.clone())?;
 
-    if app.is_active().not() {
-        info!("Quitting due to completed subcommand");
+    if let AppState::Quitting(reason) = state_after_subcommands {
+        info!("Quitting due to: {}", reason.text());
         return Ok(());
     }
 
@@ -121,11 +123,7 @@ fn handle_key_event(key: KeyEvent, app: &mut App) {
     }
 }
 
-fn handle_subcommands(
-    command: Option<Commands>,
-    app: &mut App,
-    config_path: PathBuf,
-) -> Result<()> {
+fn handle_subcommands(command: Option<Commands>, config_path: PathBuf) -> Result<AppState> {
     // TODO: When more subcommands are added, do `match` instead of `if let`
 
     if let Some(Commands::Init) = command {
@@ -140,7 +138,7 @@ fn handle_subcommands(
         let _ = init_config(config_path)?;
 
         // TODO: Use a state enum instead of a boolean. Is more semantically meaningful.
-        app.quit(app::QuitReason::Other("Completed subcommand".to_owned()));
+        return Ok(AppState::Quitting(QuitReason::InitSubcommandCompleted));
     }
-    Ok(())
+    Ok(AppState::Running)
 }

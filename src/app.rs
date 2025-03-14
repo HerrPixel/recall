@@ -19,6 +19,7 @@ pub enum AppState {
 pub enum QuitReason {
     Sigint,
     CloseKeyPressed,
+    InitSubcommandCompleted,
     Other(String),
 }
 
@@ -59,18 +60,6 @@ impl App {
 
     pub fn quit(&mut self, reason: QuitReason) {
         self.state = AppState::Quitting(reason);
-    }
-
-    pub fn get_quit_reason(&self) -> Option<&str> {
-        if let AppState::Quitting(reason) = &self.state {
-            return Some(match reason {
-                QuitReason::Sigint => "Received 'SIGINT' signal",
-                QuitReason::CloseKeyPressed => "'Close' key was pressed",
-                QuitReason::Other(s) => s,
-            });
-        }
-
-        None
     }
 
     pub fn add_config(&mut self, config: Config) {
@@ -133,6 +122,17 @@ impl App {
         match &self.config {
             Some(c) => c.highlight_color,
             None => ratatui::style::Color::LightBlue,
+        }
+    }
+}
+
+impl QuitReason {
+    pub fn text(&self) -> &str {
+        match self {
+            QuitReason::Sigint => "Received 'SIGINT' signal",
+            QuitReason::CloseKeyPressed => "'Close' key was pressed",
+            QuitReason::InitSubcommandCompleted => "'Init' subcommand was completed",
+            QuitReason::Other(s) => s,
         }
     }
 }
