@@ -3,7 +3,7 @@ use log::debug;
 
 #[derive(Debug)]
 pub struct App {
-    state: AppState,
+    pub state: AppState,
     page_number: usize,
     // We should change this to be non-optional
     config: Option<Config>,

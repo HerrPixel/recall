@@ -89,6 +89,10 @@ fn run<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> Result<()> {
         }
     }
 
+    // This should always be the case if the app is not active anymore
+    if let AppState::Quitting(reason) = &app.state {
+        info!("Quitting due to: {}", reason.text());
+    }
     Ok(())
 }
 
