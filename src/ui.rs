@@ -98,32 +98,6 @@ fn get_shortcut<'a>(entry: &(Vec<String>, String), app: &'a App) -> Line<'a> {
     shortcut
 }
 
-fn get_line_from_entry<'a>(entry: &'a (Vec<String>, String), app: &'a App) -> Line<'a> {
-    let mut line = vec![];
-
-    let keys = &entry.0;
-    let description = &entry.1;
-
-    if !keys.is_empty() {
-        line.push(
-            Span::from(keys.first().unwrap())
-                .fg(app.highlight_color())
-                .bold(),
-        );
-
-        for key in keys.iter().skip(1) {
-            line.push(Span::from("+").fg(app.primary_color()));
-            line.push(Span::from(key).fg(app.highlight_color()).bold());
-        }
-
-        line.push(" ".into());
-    }
-
-    line.push(Span::from(description).fg(app.primary_color()));
-
-    Line::from(line)
-}
-
 fn render_no_config_hint(frame: &mut Frame) {
     let block = Block::bordered();
 
