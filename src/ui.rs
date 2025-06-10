@@ -1,112 +1,117 @@
-use std::{cmp::max, ops::Not};
+//! UI rendering module for displaying pages for recall.
+//!
+//! This module provides the main `ui` function for drawing the interface using 'ratatui'
+//! and helper functions for building stylized tables and shortcut lines.
+
+use std::cmp::max;
 
 use ratatui::{
     layout::Constraint,
-    style::{Style, Stylize},
-    text::{Line, Span, Text},
-    widgets::{Block, Paragraph, Row, Table},
+    style::{Color, Stylize},
+    text::Line,
+    widgets::{Block, Padding, Row, Table},
     Frame,
 };
 
-use crate::app::App;
+use crate::app::{App, Entry};
 
+/// Renders the main user interface for the application within the given frame.
+///
+/// This function constructs a stylized table of entries on the current page,
+/// along with a title, legend, and page counter.
 pub fn ui(frame: &mut Frame, app: &App) {
-    if !app.has_config() {
-        render_no_config_hint(frame);
-        return;
-    }
-
-    let curr_table = app
+    let curr_page = app
         .get_current_page()
         // we may want to rewrite this, we could have a config that just has no pages
-        .expect("Config flag is set but no config is present.");
+        .expect("Expected page number to reference an existing page");
 
-    let title = Line::from(format!("[ {} ]", curr_table.name))
+    let title = Line::from(format!("[ {} ]", curr_page.name))
         .fg(app.highlight_color())
         .bold();
 
+    let page_counter = format!(
+        " [Page {} of {}] ",
+        app.current_page_number() + 1,
+        app.number_of_pages()
+    );
+
     let legend = Line::from(vec![
-        //" <Left> ".fg(app.highlight_color()),
-        Span::styled(" <Left> ", Style::from(app.highlight_color())),
-        Span::styled("Previous Page", Style::from(app.primary_color())),
-        Span::styled(" <Right> ", Style::from(app.highlight_color())),
-        Span::styled("Next Page", Style::from(app.primary_color())),
-        Span::styled(" <q> ", Style::from(app.highlight_color())),
-        Span::styled("Close", Style::from(app.primary_color())),
-        Span::styled(
-            format!(
-                " [Page {} of {}] ",
-                app.current_page_number() + 1,
-                app.number_of_pages()
-            ),
-            Style::from(app.highlight_color()),
-        ),
+        " <Left> ".fg(app.highlight_color()),
+        "Previous Page".fg(app.primary_color()),
+        " <Right>".fg(app.highlight_color()),
+        "Next Page".fg(app.primary_color()),
+        " <q> ".fg(app.highlight_color()),
+        "Close".fg(app.primary_color()),
+        page_counter.fg(app.highlight_color()),
     ]);
 
     let block = Block::bordered()
         .title(title.centered())
-        .title_bottom(legend.centered());
+        .title_bottom(legend.centered())
+        .padding(Padding::horizontal(1));
 
-    let mut rows = Vec::new();
-
-    let mut maximum_length = 0;
-
-    for entry in &curr_table.entries {
-        let shortcut = get_shortcut(entry, app);
-        maximum_length = max(maximum_length, shortcut.width());
-
-        rows.push(Row::new(vec![
-            Text::from(shortcut),
-            Text::from(entry.1.as_str()),
-        ]));
-    }
-
-    let table = Table::new(
-        rows,
-        vec![
-            Constraint::Length(maximum_length as u16),
-            Constraint::Fill(1),
-        ],
+    let table = build_table(
+        &curr_page.entries,
+        app.primary_color(),
+        app.highlight_color(),
     )
     .block(block);
 
     frame.render_widget(table, frame.area());
 }
 
-fn get_shortcut<'a>(entry: &(Vec<String>, String), app: &'a App) -> Line<'a> {
-    let shortcut_components = &entry.0;
+/// Builds a stylized table widget from a list of entries.
+///
+/// Each entry includes a keyboard shortcut (as a sequence of keys)
+/// and a textual description.
+/// The resulting table is formatted with aligned columns and spacing.
+/// To do this, we need to measure the maximum width of such a shortcut.
+fn build_table(entries: &Vec<Entry>, primary_color: Color, highlight_color: Color) -> Table {
+    let mut maximum_shortcut_length = 0;
 
+    let mut rows = Vec::new();
+
+    for entry in entries {
+        let shortcut = build_shortcut(&entry.content, primary_color, highlight_color);
+
+        // In order to measure the correct column width, we need to track the maximum length of such a shortcut
+        maximum_shortcut_length = max(maximum_shortcut_length, shortcut.width());
+
+        let description = entry.description.as_str().into();
+
+        let row = Row::new([shortcut, description]);
+
+        rows.push(row);
+    }
+
+    let widths = [
+        Constraint::Min(maximum_shortcut_length as u16),
+        Constraint::Percentage(75),
+    ];
+
+    let table = Table::new(rows, widths).column_spacing(2);
+
+    table
+}
+
+/// Builds a stylized span from a list of keys or other textual content
+///
+/// The resulting span is an alternating sequence of the given content and a connecting element, in this case the character '+'.
+fn build_shortcut(content: &[String], primary_color: Color, highlight_color: Color) -> Line {
     let mut shortcut = Line::default();
 
-    if shortcut_components.is_empty().not() {
-        shortcut.push_span(
-            shortcut_components
-                .first()
-                .unwrap()
-                .clone()
-                .fg(app.highlight_color())
-                .bold(),
-        );
+    if content.is_empty() {
+        return shortcut;
+    }
 
-        // TODO: use as_str() instead of cloning
-        for component in shortcut_components.iter().skip(1) {
-            shortcut.push_span("+".fg(app.primary_color()));
-            shortcut.push_span(component.clone().fg(app.highlight_color()).bold());
-        }
+    // Do not precompose a '+' before the first actual text-component.
+    // first always exists, since content is non-empty
+    shortcut.push_span(content.first().unwrap().as_str().fg(highlight_color).bold());
+
+    for component in content.iter().skip(1) {
+        shortcut.push_span("+".fg(primary_color));
+        shortcut.push_span(component.as_str().fg(highlight_color).bold());
     }
 
     shortcut
-}
-
-fn render_no_config_hint(frame: &mut Frame) {
-    let block = Block::bordered();
-
-    let paragraph = Paragraph::new(vec![
-        "It seems like there is no config loaded!".into(),
-        "To load a config, use <insert> or <insert>".into(),
-    ])
-    .centered()
-    .block(block);
-
-    frame.render_widget(paragraph, frame.area());
 }
