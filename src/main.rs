@@ -1,3 +1,13 @@
+//! Recall Application Entry Point
+//!
+//! This module is the main entry point for Recall.
+//! It handles the following responsibilities:
+//!
+//! - CLI Parsing via clap
+//! - Configuration management
+//! - Keyboard event handling
+//! - Sets up UI rendering via ratatui
+
 use std::path::PathBuf;
 
 use anyhow::{Ok, Result};
@@ -20,8 +30,10 @@ use cli::Cli;
 use config::{default_config_path, init_config, read_from_config};
 use ui::ui;
 
-// TODO: Function comments
-
+/// Entry point for recall.
+///
+/// Sets up logging, parsing of CLI arguments, processing of subcommands,
+/// reading configuration files and starts the UI loop.
 fn main() -> Result<()> {
     // TODO: Return correct exit codes
 
@@ -44,8 +56,6 @@ fn main() -> Result<()> {
         }
     };
 
-    let mut app = App::new();
-
     // This log might be the job of the handle_subcommands function
     trace!("Parsing CLI subcommands");
     let state_after_subcommands = handle_subcommands(cli.command, config_path.clone())?;
@@ -58,10 +68,7 @@ fn main() -> Result<()> {
     // TODO: Handle non-existent config without throwing an error
     let config = read_from_config(config_path)?;
 
-    // This seems like bad style, maybe it's best to temporarily decouple
-    // the state from the app and make one constructor that takes the config and state
-    // without having a partially initialized struct like here.
-    app.add_config(config);
+    let mut app = App::new(config);
 
     trace!("Creating terminal backend");
     let mut terminal = ratatui::init();
@@ -74,6 +81,9 @@ fn main() -> Result<()> {
     Ok(())
 }
 
+/// Runs the main application loop
+///
+/// Repeatedly draws the UI loop and handles keyboard events until the applications state changes to 'Quitting'
 fn run<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> Result<()> {
     while app.is_active() {
         terminal.draw(|f| ui(f, app))?;
@@ -92,8 +102,10 @@ fn run<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> Result<()> {
     Ok(())
 }
 
+/// Handles a single key event and modifies the application state accordingly.
 fn handle_key_event(key: KeyEvent, app: &mut App) {
     // TODO: Check that the keys are pressed, not repeated or released
+    // Actually, seems like this is already the case.
 
     // Is this the correct way to handle SIGINTs and SIGKILLs?
     if key.modifiers == KeyModifiers::CONTROL {
@@ -123,6 +135,7 @@ fn handle_key_event(key: KeyEvent, app: &mut App) {
     }
 }
 
+/// Processes CLI subcommands before launching the main application.
 fn handle_subcommands(command: Option<Commands>, config_path: PathBuf) -> Result<AppState> {
     // TODO: When more subcommands are added, do `match` instead of `if let`
 
