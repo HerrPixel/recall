@@ -3,8 +3,9 @@
 <p align=center>Recall keybinds, shortcuts, commands and more</p>
 
 <p align=center>
-  <img alt="recall_screenshot" src="https://github.com/user-attachments/assets/3fd3dfd9-82be-48cd-8c68-50f514a5f427" width="500">
+  <img alt="recall_screenshot" src="https://github.com/user-attachments/assets/1e86d57d-154a-462d-be6a-c0df674ed9a1" width="500">
 </p>
+
 
 Recall is a simple utility tool to display predefined entries, like keybinds, shortcuts, commands and other one-liners you want to remember. You can group these entries on pages and quickly navigate through them.
 
